@@ -1,0 +1,5 @@
+com/mycompany/sistema/reservas/dominio/modelo/RangoFechas.class
+com/mycompany/sistema/reservas/dominio/modelo/ReservaAnemica.class
+com/mycompany/sistema/reservas/dominio/modelo/Reserva.class
+com/mycompany/sistema/reservas/dominio/modelo/EstadoReserva.class
+com/mycompany/sistema/reservas/dominio/SistemaReservasDominio.class
