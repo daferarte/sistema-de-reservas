@@ -5,6 +5,7 @@
 package com.mycompany.sistema.reservas.dominio.modelo;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 /**
  *
@@ -22,5 +23,9 @@ public record RangoFechas(LocalDateTime fechaInicio, LocalDateTime fechaFin) {
 
     public boolean incluye(LocalDateTime fecha) {
         return !fecha.isBefore(fechaInicio) && !fecha.isAfter(fechaFin);
+    }
+    
+    public long duracionEnDias() {
+        return ChronoUnit.DAYS.between(fechaInicio, fechaFin);
     }
 }

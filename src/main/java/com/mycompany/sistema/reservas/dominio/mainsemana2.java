@@ -2,14 +2,16 @@ package com.mycompany.sistema.reservas.dominio;
 
 import com.mycompany.sistema.reservas.dominio.modelo.Cliente;
 import com.mycompany.sistema.reservas.dominio.modelo.Email;
+import com.mycompany.sistema.reservas.dominio.modelo.Habitacion;
+import com.mycompany.sistema.reservas.dominio.modelo.NumeroHabitacion;
 import com.mycompany.sistema.reservas.dominio.modelo.RangoFechas;
 import com.mycompany.sistema.reservas.dominio.modelo.Reserva;
 import java.time.LocalDateTime;
-import notificacion.EmailNotificadorService;
 import notificacion.NotificadorService;
-import politicas.DescuentoCorporativo;
+import notificacion.WhatsAppNotificadorService;
+import politicas.DescuentoEstadiaLarga;
 import politicas.PoliticaDescuento;
-import repositorio.ReservaMemoriaRepository;
+import repositorio.ReservaArchivoRepository;
 import repositorio.ReservaRepository;
 import servicio.ConfirmacionReservaService;
 
@@ -24,25 +26,48 @@ import servicio.ConfirmacionReservaService;
  */
 public class mainsemana2 {
     public static void main(String[] args) {
-        // 1. Instanciar Entidades y Value Objects de Semana 1
-        Cliente cliente = new Cliente("Beatriz Morales", new Email("beatriz@empresa.com"));
-        RangoFechas periodo = new RangoFechas(
-            LocalDateTime.now().plusDays(1),
-            LocalDateTime.now().plusDays(5)
-        );
-        Reserva reserva = new Reserva(cliente, periodo);
+        System.out.println("=== ESCENARIO 1: RESERVA EXITOSA (SOLID + DOMINIO RICO) ===");
+        try {
+            Cliente cliente = new Cliente("Santiago Ospina", new Email("santiago@empresa.com"));
+            NumeroHabitacion numHab = new NumeroHabitacion("P03-302");
+            Habitacion habitacion = new Habitacion(numHab, 2);
 
-        // 2. Configurar la infraestructura deseada (Fácilmente intercambiable)
-        ReservaRepository repositorio = new ReservaMemoriaRepository();
-        NotificadorService notificador = new EmailNotificadorService(); // Podría ser SmsNotificadorService
+            // Periodo de 10 días para activar DescuentoEstadiaLarga (> 7 días)
+            RangoFechas periodoLargo = new RangoFechas(
+                LocalDateTime.now().plusDays(1),
+                LocalDateTime.now().plusDays(11)
+            );
 
-        // 3. Crear el servicio inyectando las dependencias
-        ConfirmacionReservaService servicio = new ConfirmacionReservaService(repositorio, notificador);
+            Reserva reserva = new Reserva(cliente, habitacion, periodoLargo);
 
-        // 4. Ejecutar el caso de uso aplicando descuento Corporativo
-        PoliticaDescuento descuentoCorporativo = new DescuentoCorporativo();
-        double precioFinal = servicio.procesar(reserva, descuentoCorporativo, 300.0);
+            // Inyección de infraestructura desacoplada
+            ReservaRepository repoArchivo = new ReservaArchivoRepository("reservas_log.txt");
+            NotificadorService notifWhatsApp = new WhatsAppNotificadorService();
+            ConfirmacionReservaService servicio = new ConfirmacionReservaService(repoArchivo, notifWhatsApp);
 
-        System.out.println("Proceso finalizado. Total pagado: $" + precioFinal);
+            PoliticaDescuento descuentoEstadia = new DescuentoEstadiaLarga(periodoLargo);
+            double total = servicio.procesar(reserva, descuentoEstadia, 1000.0);
+
+            System.out.println("Habitación tras confirmación: " + habitacion.getEstado());
+            System.out.println("Precio final con 25% desc: $" + total);
+
+        } catch (Exception e) {
+            System.err.println("Error inesperado: " + e.getMessage());
+        }
+
+        System.out.println("\n=== ESCENARIO 2: HABITACIÓN EN MANTENIMIENTO (FAIL-FAST) ===");
+        try {
+            Cliente cliente2 = new Cliente("Valentina Ríos", new Email("valen@empresa.com"));
+            Habitacion habMantenimiento = new Habitacion(new NumeroHabitacion("P01-101"), 4);
+            habMantenimiento.marcarEnMantenimiento();
+
+            RangoFechas periodo = new RangoFechas(LocalDateTime.now().plusDays(2), LocalDateTime.now().plusDays(4));
+
+            // Intentar reservar habitación en mantenimiento disparará la excepción
+            new Reserva(cliente2, habMantenimiento, periodo);
+
+        } catch (IllegalStateException e) {
+            System.out.println("Excepción de Dominio capturada con éxito: " + e.getMessage());
+        }
     }
 }
