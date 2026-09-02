@@ -4,6 +4,12 @@
  */
 package com.mycompany.sistema.reservas.dominio.modelo;
 
+import comportamentales.observer.GestorEventosReserva;
+import comportamentales.state.EstadoPendiente;
+import comportamentales.state.EstadoReserva;
+import comportamentales.strategy.EstrategiaCancelacion;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 /**
@@ -11,50 +17,69 @@ import java.util.UUID;
  * @author daferarte
  */
 public class Reserva {
-    private final UUID id;            // Inmutable 
-    private final Cliente cliente;    // Asociación directa con la entidad Cliente
+    private final UUID id;             
+    private final Cliente cliente;     
     private final Habitacion habitacion;
-    private RangoFechas periodo;      // Value Object
+    private RangoFechas periodo;       
+    
+    // 1. Patrón State: El estado es una interfaz, no un Enum
     private EstadoReserva estado;
+
+    // 2. Patrones inyectados para manejo de reglas dinámicas y eventos
+    private EstrategiaCancelacion estrategiaCancelacion;
+    private GestorEventosReserva gestorEventos;
     
     public Reserva(Cliente cliente, Habitacion habitacion, RangoFechas periodo) {
-        if (cliente == null) {
-            throw new IllegalArgumentException("El cliente es obligatorio");
-        }
-        if (!cliente.puedeRealizarReservas()) {
-            throw new IllegalStateException("El cliente no está habilitado para realizar reservas");
-        }
-        if (habitacion == null) {
-            throw new IllegalArgumentException("La habitación es obligatoria");
-        }
-        if (habitacion.getEstado() == EstadoHabitacion.MANTENIMIENTO) {
-            throw new IllegalStateException("No se puede reservar una habitación en mantenimiento");
-        }
-        if (periodo == null) {
-            throw new IllegalArgumentException("El periodo es obligatorio");
-        }
+        if (cliente == null) throw new IllegalArgumentException("El cliente es obligatorio");
+        if (!cliente.puedeRealizarReservas()) throw new IllegalStateException("El cliente no está habilitado");
+        if (habitacion == null) throw new IllegalArgumentException("La habitación es obligatoria");
+        if (habitacion.getEstado() == EstadoHabitacion.MANTENIMIENTO) throw new IllegalStateException("Habitación en mantenimiento");
+        if (periodo == null) throw new IllegalArgumentException("El periodo es obligatorio");
 
         this.id = UUID.randomUUID();
         this.cliente = cliente;
         this.habitacion = habitacion;
         this.periodo = periodo;
-        this.estado = EstadoReserva.PENDIENTE;
+        
+        // La reserva nace en estado pendiente
+        this.estado = new EstadoPendiente(); 
     }
+    
+    // --- MÉTODOS DE DELEGACIÓN (Cero IFs) ---
     
     public void confirmar() {
-        if (this.estado == EstadoReserva.CANCELADA) {
-            throw new IllegalStateException("No se puede confirmar una reserva cancelada");
-        }
-        this.habitacion.asignarAReserva();
-        this.estado = EstadoReserva.CONFIRMADA;
+        this.estado.confirmar(this);
     }
     
+    public void cancelar(int diasRestantes) {
+        this.estado.cancelar(this, diasRestantes);
+    }
+
     public void cancelar() {
-        if (this.estado == EstadoReserva.CONFIRMADA) {
-            // reglas cancelar
-        }
-        this.estado = EstadoReserva.CANCELADA;
-        this.habitacion.habilitar();
+        int diasRestantes = (int) ChronoUnit.DAYS.between(LocalDateTime.now(), periodo.fechaInicio());
+        cancelar(Math.max(0, diasRestantes));
+    }
+    
+    public void setEstado(EstadoReserva nuevoEstado) {
+        this.estado = nuevoEstado;
+    }
+
+    // --- GETTERS Y SETTERS ---
+
+    public void setEstrategiaCancelacion(EstrategiaCancelacion estrategia) {
+        this.estrategiaCancelacion = estrategia;
+    }
+
+    public EstrategiaCancelacion getEstrategiaCancelacion() {
+        return estrategiaCancelacion;
+    }
+
+    public void setGestorEventos(GestorEventosReserva gestor) {
+        this.gestorEventos = gestor;
+    }
+
+    public GestorEventosReserva getGestorEventos() {
+        return gestorEventos;
     }
     
     public UUID getId() { return id; }
@@ -62,4 +87,9 @@ public class Reserva {
     public Habitacion getHabitacion() { return habitacion; }
     public RangoFechas getPeriodo() { return periodo; }
     public EstadoReserva getEstado() { return estado; }
+    
+    // Método auxiliar necesario para Strategy
+    public double getTotal() {
+        return habitacion.getPrecioPorNoche() * periodo.getDias();
+    }
 }

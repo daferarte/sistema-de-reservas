@@ -28,4 +28,8 @@ public record RangoFechas(LocalDateTime fechaInicio, LocalDateTime fechaFin) {
     public long duracionEnDias() {
         return ChronoUnit.DAYS.between(fechaInicio, fechaFin);
     }
+    
+    public long getDias() {
+        return duracionEnDias();
+    }
 }

@@ -24,6 +24,7 @@ public class ConfiguracionSistema {
     }
 
     public static ConfiguracionSistema getInstancia() {
+                
         return Holder.INSTANCIA;
     }
 

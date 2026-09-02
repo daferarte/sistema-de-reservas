@@ -20,6 +20,7 @@ public class PasarelaPagoAdapter implements ProcesadorPago {
     @Override
     public boolean cobrar(Cliente cliente, double monto) {
         // Adaptación: Convertir el tipo de dato y transformar dólares/pesos a centavos
+        // 15.50 = 1550
         String customerRef = cliente.getEmail().valor();
         long amountInCents = Math.round(monto * 100);
 

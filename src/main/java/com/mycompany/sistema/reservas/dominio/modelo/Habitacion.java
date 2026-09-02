@@ -14,19 +14,28 @@ public class Habitacion {
     private final UUID id;
     private final NumeroHabitacion numero;
     private final int capacidadMaxima;
+    private final double precioPorNoche;
     private EstadoHabitacion estado;
 
-    public Habitacion(NumeroHabitacion numero, int capacidadMaxima) {
+    public Habitacion(NumeroHabitacion numero, int capacidadMaxima, double precioPorNoche) {
         if (numero == null) {
             throw new IllegalArgumentException("El número de habitación es obligatorio");
         }
         if (capacidadMaxima < 1) {
             throw new IllegalArgumentException("La capacidad máxima debe ser de al menos 1 persona");
         }
+        if (precioPorNoche < 0) {
+            throw new IllegalArgumentException("El precio por noche no puede ser negativo");
+        }
         this.id = UUID.randomUUID();
         this.numero = numero;
         this.capacidadMaxima = capacidadMaxima;
+        this.precioPorNoche = precioPorNoche;
         this.estado = EstadoHabitacion.DISPONIBLE;
+    }
+
+    public Habitacion(NumeroHabitacion numero, int capacidadMaxima) {
+        this(numero, capacidadMaxima, 100.0);
     }
 
     public void marcarEnMantenimiento() {
@@ -47,5 +56,6 @@ public class Habitacion {
     public UUID getId() { return id; }
     public NumeroHabitacion getNumero() { return numero; }
     public int getCapacidadMaxima() { return capacidadMaxima; }
+    public double getPrecioPorNoche() { return precioPorNoche; }
     public EstadoHabitacion getEstado() { return estado; }
 }

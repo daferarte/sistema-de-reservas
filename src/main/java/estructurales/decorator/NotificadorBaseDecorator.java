@@ -12,14 +12,14 @@ import notificacion.NotificadorService;
  * @author daferarte
  */
 public abstract class NotificadorBaseDecorator implements NotificadorService {
-    protected final NotificadorService wrapped;
+    protected final NotificadorService envoltorio;
 
-    public NotificadorBaseDecorator(NotificadorService wrapped) {
-        this.wrapped = wrapped;
+    public NotificadorBaseDecorator(NotificadorService envoltorio) {
+        this.envoltorio = envoltorio;
     }
 
     @Override
     public void notificar(Cliente cliente, String mensaje) {
-        wrapped.notificar(cliente, mensaje);
+        envoltorio.notificar(cliente, mensaje);
     }
 }

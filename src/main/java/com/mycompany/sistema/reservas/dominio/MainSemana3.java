@@ -18,7 +18,7 @@ import estructurales.adapter.ProcesadorPago;
 import estructurales.decorator.NotificadorConCopiaAdminDecorator;
 import estructurales.decorator.NotificadorUrgenteDecorator;
 import java.time.LocalDateTime;
-import notificacion.EmailNotificadorService;
+import notificacion.EmailNotificador;
 import notificacion.NotificadorService;
 import politicas.PoliticaDescuento;
 
@@ -62,7 +62,7 @@ public class MainSemana3 {
         // Combinamos dinámicamente Email + Decorador Urgente + Decorador Copia Administrador
         NotificadorService notificadorDecorado = new NotificadorConCopiaAdminDecorator(
                 new NotificadorUrgenteDecorator(
-                        new EmailNotificadorService()
+                        new EmailNotificador()
                 )
         );
 
