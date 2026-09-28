@@ -18,23 +18,15 @@ public class EstadoConfirmada implements EstadoReserva {
 
     @Override
     public void cancelar(Reserva contexto, int diasRestantes) {
-        // Ejecuta el Patrón Strategy para la multa dinámica
         if (contexto.getEstrategiaCancelacion() != null) {
             double multa = contexto.getEstrategiaCancelacion().calcularMulta(contexto, diasRestantes);
             System.out.println("Multa procesada por sistema: $" + multa);
         }
-
         contexto.getHabitacion().habilitar();
         contexto.setEstado(new EstadoCancelada());
 
-        // Ejecuta el Patrón Observer para emitir alertas
         if (contexto.getGestorEventos() != null) {
             contexto.getGestorEventos().notificarCancelacion(contexto);
         }
-    }
-
-    @Override
-    public String toString() {
-        return "CONFIRMADA";
     }
 }

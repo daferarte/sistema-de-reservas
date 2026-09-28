@@ -15,18 +15,10 @@ public class EstadoPendiente implements EstadoReserva {
     public void confirmar(Reserva contexto) {
         contexto.getHabitacion().asignarAReserva();
         contexto.setEstado(new EstadoConfirmada());
-        if (contexto.getGestorEventos() != null) {
-            contexto.getGestorEventos().notificarConfirmacion(contexto);
-        }
     }
 
     @Override
     public void cancelar(Reserva contexto, int diasRestantes) {
         contexto.setEstado(new EstadoCancelada());
-    }
-
-    @Override
-    public String toString() {
-        return "PENDIENTE";
     }
 }

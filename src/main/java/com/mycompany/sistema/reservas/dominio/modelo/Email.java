@@ -9,9 +9,15 @@ package com.mycompany.sistema.reservas.dominio.modelo;
  * @author daferarte
  */
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 import java.util.regex.Pattern;
 
-public record Email(String valor) {
+@Embeddable
+public record Email(
+    @Column(name = "email", nullable = false, unique = true, length = 150)
+    String valor
+    ) {
     private static final Pattern PATRON_EMAIL = 
         Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
     

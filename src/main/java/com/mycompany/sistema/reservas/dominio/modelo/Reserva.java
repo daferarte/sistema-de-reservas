@@ -11,23 +11,48 @@ import comportamentales.strategy.EstrategiaCancelacion;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
+import jakarta.persistence.*;
 
 /**
  *
  * @author daferarte
  */
+@Entity
+@Table(name = "reservas")
 public class Reserva {
-    private final UUID id;             
-    private final Cliente cliente;     
-    private final Habitacion habitacion;
-    private RangoFechas periodo;       
     
-    // 1. Patrón State: El estado es una interfaz, no un Enum
+    @Id
+    @Column(name = "id", updatable = false, nullable = false)
+    private UUID id;
+
+    // Asociación relacional con Cliente (Foreign Key: cliente_id)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "cliente_id", nullable = false)
+    private Cliente cliente;
+
+    // Asociación relacional con Habitación (Foreign Key: habitacion_id)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "habitacion_id", nullable = false)
+    private Habitacion habitacion;
+
+    // Value Object RangoFechas incrustado
+    @Embedded
+    private RangoFechas periodo;
+
+    // 1. Patrón State persistido mediante AttributeConverter
+    @Convert(converter = EstadoReservaConverter.class)
+    @Column(name = "estado", nullable = false)
     private EstadoReserva estado;
 
-    // 2. Patrones inyectados para manejo de reglas dinámicas y eventos
+    // 2. Patrones inyectados en memoria: @Transient indica que NO son columnas de la base de datos
+    @Transient
     private EstrategiaCancelacion estrategiaCancelacion;
+
+    @Transient
     private GestorEventosReserva gestorEventos;
+
+    // Constructor sin argumentos protegido exigido por JPA
+    protected Reserva() {}
     
     public Reserva(Cliente cliente, Habitacion habitacion, RangoFechas periodo) {
         if (cliente == null) throw new IllegalArgumentException("El cliente es obligatorio");

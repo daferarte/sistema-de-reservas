@@ -4,13 +4,19 @@
  */
 package com.mycompany.sistema.reservas.dominio.modelo;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 import java.util.regex.Pattern;
 
 /**
  *
  * @author daferarte
  */
-public record NumeroHabitacion(String valor) {
+@Embeddable
+public record NumeroHabitacion(
+        @Column(name = "numero", nullable = false, unique = true, length = 10)
+                String valor
+        ) {
     private static final Pattern PATRON = Pattern.compile("^P\\d{2}-\\d{3}$");
 
     public NumeroHabitacion {

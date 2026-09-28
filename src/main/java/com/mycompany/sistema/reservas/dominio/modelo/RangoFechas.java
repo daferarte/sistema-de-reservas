@@ -4,6 +4,8 @@
  */
 package com.mycompany.sistema.reservas.dominio.modelo;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
@@ -11,7 +13,14 @@ import java.time.temporal.ChronoUnit;
  *
  * @author daferarte
  */
-public record RangoFechas(LocalDateTime fechaInicio, LocalDateTime fechaFin) {
+@Embeddable
+public record RangoFechas(
+        @Column(name = "fecha_inicio", nullable = false) 
+        LocalDateTime fechaInicio, 
+        @Column(name = "fecha_fin", nullable = false) 
+        LocalDateTime fechaFin
+    ) {
+    
     public RangoFechas {
         if (fechaInicio == null || fechaFin == null) {
             throw new IllegalArgumentException("Las fechas no pueden ser nulas");

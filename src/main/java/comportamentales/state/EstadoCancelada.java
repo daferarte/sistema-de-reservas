@@ -15,13 +15,9 @@ public class EstadoCancelada implements EstadoReserva {
     public void confirmar(Reserva contexto) {
         throw new IllegalStateException("No se puede confirmar una reserva cancelada.");
     }
+
     @Override
     public void cancelar(Reserva contexto, int diasRestantes) {
         throw new IllegalStateException("La reserva ya está cancelada.");
-    }
-
-    @Override
-    public String toString() {
-        return "CANCELADA";
     }
 }
